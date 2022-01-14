@@ -44,6 +44,9 @@ def parse_json ():
 
     messagi_totali=0
     messagi_fix_bug=0
+    messagi_fix_pipe=0
+    messaggi_fix_code_source=0
+
     messagi_vuoti=0
     flag=1
 
@@ -69,11 +72,19 @@ def parse_json ():
                 if flag==1:
                     messagi_totali+=1
 
-                if  trova_message.find("fix")!=-1 and trova_message.find("bug")!=-1:
+                if trova_message.find("fix") != -1 and trova_message.find("pipe") != -1:
                     print(trova_message)
+                    print("punto 1: ")
                     print()
-                    print()
-                    messagi_fix_bug+=1
+                    messagi_fix_pipe += 1
+
+                    if trova_message.find("source") != -1 and (trova_message.find("fix") != -1 or trova_message.find("update") != -1):
+                        print(trova_message)
+                        print("punro 2: ")
+                        print()
+                        messaggi_fix_code_source += 1
+
+
                 '''
                 if trova_message.find("update gitignore")!=-1:
                     print(trova_message)
@@ -111,8 +122,8 @@ def parse_json ():
         except KeyError:
             c=0
 
-    print("messagi_fix/messagi_totali:", messagi_fix_bug,"/", messagi_totali)
-    print("messagi vuoti: ",messagi_vuoti)
+    print("messagi_fix/messagi_totali:", messagi_fix_pipe,"/", messagi_totali)
+    print("corezione bug codice sorgente: ", messaggi_fix_code_source,"/", messagi_totali)
 
 if __name__ == '__main__':
     #download_dati()
