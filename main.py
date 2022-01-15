@@ -1,130 +1,70 @@
-from urllib.request import Request, urlopen
-import gzip
-import json
+import random
+from gharchive import GHArchive
+
+git_message = []
+commit_id = []
+clone_url = []
+
 
 def download_dati():
+    messagi_totali = 0
+    messagi_fix_pipe = 0
     print('Beginning file download')
-    url = 'https://data.gharchive.org/2020-01-01-16.json.gz'
 
-    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    web_byte = urlopen(req).read()
+    gh = GHArchive()
+    data = gh.get('6/8/2020 15', '6/8/2020 16', filters=[('type', 'PushEvent')])
+    for d in data:
+        a = d.payload.commits
+        for l in a:
+            url_clone = ("git@github.com:" + d.repo.name + ".git")
+            clone_url.append(url_clone)
+            git_message.append(l.message)
+            commit_id.append(l.sha)
 
-    github_gzip = open("github_gzip.json", "wb")
-    github_gzip.write(web_byte)
-    github_gzip.close()
+    github = open("github", "w")
 
-    file_git = gzip.open("github_gzip.json", "rb")
-    contents = file_git.read()
-    #print(contents)
+    for s in git_message:
+        messagi_totali += 1
+        # aggiungere più parole chiavi tipo secure bug
+        if s.find("fix") != -1 and s.find("pipe") != -1 or s.find("secure") != -1 or s.find("bug") != -1:
+            print(s)
+            print("punto 1: ")
+            print()
+            print()
+            print()
+            messagi_fix_pipe += 1
 
-    github_gzip = open("github.json", "wb")
-    github_gzip.write(contents)
-    github_gzip.close()
+            n = git_message.index(s)
 
-    print("\ncontents",  type(contents))
-    print("github_gzip", type(github_gzip))
-    print("github.json", type("github.json"))
+            github.write(clone_url[n] + "\n")
+            github.write(commit_id[n] + "\n")
 
-def parse_json ():
-    f = open("github.json", "r", encoding='UTF-8')
-    git = (f.readlines())
-
-    '''
-    print(git.count("commit "))
-    print(git.find('User'))
-    '''
-
-    json_data = []
-    #print(type(git))
-
-    for jsonObj in git:
-        #print(type(jsonObj))
-        jsonDistinct = json.loads(jsonObj)
-        json_data.append(jsonDistinct)
-
-    messagi_totali=0
-    messagi_fix_bug=0
-    messagi_fix_pipe=0
-    messaggi_fix_code_source=0
-
-    messagi_vuoti=0
-    flag=1
-
-    print("Printing each JSON Decoded Object")
-    for github in json_data:
-        try:
-
-            #print(github)
-            #print(github["payload"]["commits"])
-            #print(type(((github["payload"]["commits"]))))
-
-            if github["type"]=="PushEvent":
-                scomponi=github["payload"]["commits"]
-                flag=1
-            else:
-                scomponi=""
-                flag=0
-
-            for s in scomponi:
-                #print(s['message'])
-                trova_message=(s['message'])
-                #print(type(trova))
-                if flag==1:
-                    messagi_totali+=1
-
-                if trova_message.find("fix") != -1 and trova_message.find("pipe") != -1:
-                    print(trova_message)
-                    print("punto 1: ")
-                    print()
-                    messagi_fix_pipe += 1
-
-                    if trova_message.find("source") != -1 and (trova_message.find("fix") != -1 or trova_message.find("update") != -1):
-                        print(trova_message)
-                        print("punro 2: ")
-                        print()
-                        messaggi_fix_code_source += 1
+    github.close()
+    print("messagi_fix/messagi_totali:", messagi_fix_pipe, "/", messagi_totali, " ",
+          (messagi_fix_pipe * 100) / messagi_totali, "%")
+    return messagi_fix_pipe
 
 
-                '''
-                if trova_message.find("update gitignore")!=-1:
-                    print(trova_message)
-                    messagi_vuoti+=1
+def choose_commit(n=int):
+    commit = open("id_url_commit", "w")
+    f = open("github", "r")
+    lines = f.readlines()
 
-                
-                trova_author=(s['author'])
-                #print(trova_author)
-                name_author=trova_author['name']
-                email_author=trova_author['email']
-                if name_author.find("kyuhsim")!=-1 and email_author.find("5c2115d366f8a4eff8970563e42b1185072c4994@naver.com")!=-1:
-                    print(trova_author)
-                '''
+    print(n)
+    for i in range(0, 10):
+        x = random.randint(1, n)
+        print(x)
 
-            '''
-            funziona:
-            print(github)
-            print(github["actor"]["id"])
-            print(github["id"])
-            print(github["payload"]["push_id"])
-            (github["payload"]["distinct_size"])
-            print(github["payload"]["ref"]) 
-            print(github["payload"]["head"])
-            print(github["payload"]["before"])
-            print(github["payload"]["commits"])
-            print(github["payload"]["size"])
+        if (x % 2) == 0:
+            commit.write(lines[x])
+            commit.write(lines[x + 1])
+        else:
+            commit.write(lines[x - 1])
+            commit.write(lines[x])
+    f.close()
+    commit.close()
 
-            non funziona:
-            print(github["payload"]["action"])
-            print(github["payload"]["author"])
-            print(github["payload"]["message"])
-            print(github["payload"]["distinct"])
-            print(github["payload"]["url"])
-            '''
-        except KeyError:
-            c=0
-
-    print("messagi_fix/messagi_totali:", messagi_fix_pipe,"/", messagi_totali)
-    print("corezione bug codice sorgente: ", messaggi_fix_code_source,"/", messagi_totali)
 
 if __name__ == '__main__':
-    #download_dati()
-    parse_json()
+    n=download_dati()
+    choose_commit(n)
