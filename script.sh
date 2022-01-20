@@ -5,6 +5,8 @@ conta=0
 sorgente=0
 configurazione=0
 totale=0
+nr=0
+repositorynonpiuesistenti=0
 
 function salva_file_in_array
 {
@@ -24,7 +26,8 @@ function clone_repo_diff
     for ((i=0; i<$conta; i+=2))
     do
         name1="repository"
-        name2="$i"
+        name2="$nr"
+        ((nr+=1))
         final_name="$name1$name2"
         mkdir -p "$final_name"
         cd "$final_name"
@@ -71,8 +74,10 @@ function clone_repo_diff
 
         else
             echo vuoto
-            rm C:/Users/ricca/Desktop/collection/"$final_name"/result.txt
-            rm C:/Users/ricca/Desktop/collection/"$final_name"/result1.txt
+            rm C:/Users/ricca/Desktop/collection/"$final_name"
+            ((nr-=1))
+            ((repositorynonpiuesistenti+=1))
+            echo $repositorynonpiuesistenti
         
         fi
         
@@ -97,6 +102,8 @@ cp=$((configurazione*100/totale))
 cpp="$cp%"
 spp="$sp%"
 
+
+
 cd C:/Users/ricca/Desktop/collection
 echo $st>conclusione.txt
 echo $s>>conclusione.txt
@@ -104,6 +111,8 @@ echo $spp>>conclusione.txt
 echo $ct>>conclusione.txt
 echo $c>>conclusione.txt
 echo $cpp>>conclusione.txt
+echo repository non più esistenti:>>conclusione.txt
+echo $repositorynonpiuesistenti
 }
 
 function main
